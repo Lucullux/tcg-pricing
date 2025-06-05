@@ -6,6 +6,20 @@ import re
 import csv
 from io import StringIO
 
+# Request headers used for fetching data from eBay
+HEADERS = {
+    "User-Agent": (
+        "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
+        "AppleWebKit/537.36 (KHTML, like Gecko) "
+        "Chrome/115.0 Safari/537.36"
+    ),
+    "Accept-Language": "en-US,en;q=0.9",
+    "Accept": (
+        "text/html,application/xhtml+xml,application/xml;q=0.9," \
+        "image/avif,image/webp,image/apng,*/*;q=0.8"
+    ),
+}
+
 @st.cache_data(show_spinner=False)
 def fetch_price_data(card):
     """Fetch average sold price and lowest current listing price from eBay."""
@@ -13,18 +27,9 @@ def fetch_price_data(card):
     if card.get("holo"):
         query_parts.append("holo")
     query = "+".join(str(part) for part in query_parts if part)
-    headers = {
-        "User-Agent": (
-            "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
-            "AppleWebKit/537.36 (KHTML, like Gecko) "
-            "Chrome/115.0 Safari/537.36"
-        ),
-        "Accept-Language": "en-US,en;q=0.9",
-        "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8",
-    }
     def parse_prices(url):
         try:
-            resp = requests.get(url, headers=headers, timeout=10)
+            resp = requests.get(url, headers=HEADERS, timeout=10)
         except requests.RequestException as exc:
             st.error(f"Request to {url} failed: {exc}")
             return None, f"Request failed: {exc}"
